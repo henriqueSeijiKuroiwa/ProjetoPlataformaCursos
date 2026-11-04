@@ -33,7 +33,10 @@
         let r=await fetch('/bff/participantes');
         let d=await r.json();
         lista.innerHTML=d.map(x=>`<li>${x.nome} - ${x.email} - ${x.pontos} - ${x.nivel}</li>`).join('')} f.onsubmit=async e=>{e.preventDefault();
-        let r=await fetch('/bff/participantes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nome.value,email:email.value,pontos:+pontos.value})});
+        let r=await fetch('/bff/participantes',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({nome:nome.value,email:email.value,pontos:+pontos.value})});
         msg.textContent=r.ok?'Cadastrado com sucesso': 'Erro no cadastro';
         if (r.ok) {
             f.reset();
