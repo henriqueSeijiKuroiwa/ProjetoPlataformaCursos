@@ -44,13 +44,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: app-frontend
     environment:
       # O server.js vai usar essa URL para reencaminhar os requests /api/*
       # 'backend' deve ser o nome exato do serviço do Spring Boot neste compose file
       API_URL: http://api:8080
     ports:
-      - "3000:3000" # Mapeia a porta 3000 do host para a porta 3000 do contêiner
+      - "${BFF_PORT:-3000}:3000"
     depends_on:
       - api
 
