@@ -1,4 +1,43 @@
-const express=require('express'); const app=express(); const API=process.env.API_URL||'http://localhost:8080'; app.use(express.json()); app.use(express.static('public'));
-app.get('/bff/participantes',async(req,res)=>{const r=await fetch(`${API}/api/participantes`);res.status(r.status).send(await r.text());});
-app.post('/bff/participantes',async(req,res)=>{const r=await fetch(`${API}/api/participantes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(req.body)});res.status(r.status).send(await r.text());});
-app.get('/health',(req,res)=>res.json({status:'UP'})); app.listen(3000,()=>console.log('BFF :3000 -> '+API));
+const express = require('express');
+const path = require('path');
+const app = express();
+
+// Aponta para o seu Spring Boot (via Docker ou local)
+const API = process.env.API_URL || 'http://localhost:8080';
+
+app.use(express.json());
+
+// 1. Serve os arquivos estáticos gerados pelo Vite (pasta dist)
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// 2. Rota de Proxy: Repassa qualquer chamada /api/* para o Spring Boot
+app.all('/api/*', async (req, res) => {
+    try {
+        const options = {
+            method: req.method,
+            headers: { 'Content-Type': 'application/json' }
+        };
+
+        // Adiciona o corpo (body) apenas se não for um método GET/HEAD
+        if (req.method !== 'GET' && req.method !== 'HEAD' && req.body && Object.keys(req.body).length > 0) {
+            options.body = JSON.stringify(req.body);
+        }
+
+        const response = await fetch(`${API}${req.originalUrl}`, options);
+        const data = await response.text();
+        res.status(response.status).send(data);
+    } catch (error) {
+        console.error('Erro de conexão BFF -> Backend:', error);
+        res.status(500).json({ erro: 'Falha ao conectar com o backend Spring Boot' });
+    }
+});
+
+// 3. Fallback do Vue Router: Qualquer outra rota na barra de endereços devolve o index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// 4. Inicia o servidor na porta 3000
+app.listen(3000, () => {
+    console.log(`BFF rodando na porta 3000 -> Conectado à API em ${API}`);
+});
