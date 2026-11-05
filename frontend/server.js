@@ -11,18 +11,18 @@ app.use(express.json());
 app.use(express.static(path.resolve('dist')));
 
 // 2. Rota de Proxy: Repassa qualquer chamada /api/* para o Spring Boot
-app.all('/api/*', async (req, res) => {
+app.all('/api/:path(*)', async (req, res) => {
     try {
         const options = {
             method: req.method,
             headers: { 'Content-Type': 'application/json' }
         };
 
-        // Adiciona o corpo (body) apenas se não for um método GET/HEAD
         if (req.method !== 'GET' && req.method !== 'HEAD' && req.body && Object.keys(req.body).length > 0) {
             options.body = JSON.stringify(req.body);
         }
 
+        // MUDANÇA AQUI na URL do fetch. Usamos o req.originalUrl para repassar o caminho exato
         const response = await fetch(`${API}${req.originalUrl}`, options);
         const data = await response.text();
         res.status(response.status).send(data);
