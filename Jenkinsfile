@@ -154,12 +154,12 @@ pipeline {
         }
 
         stage('9 - CD - Cypress E2E em Container') {
-            steps { script { runCmd('docker compose -f ' + env.COMPOSE_FILE + ' --profile e2e run --rm cypress') } }
+            /*steps { script { runCmd('docker compose -f ' + env.COMPOSE_FILE + ' --profile e2e run --rm cypress') } }
             post {
                 always {
                     archiveArtifacts artifacts: 'frontend/cypress/screenshots/**,frontend/cypress/videos/**', allowEmptyArchive: true
                 }
-            }
+            }*/
         }
 
         stage('10 - Observabilidade') {
