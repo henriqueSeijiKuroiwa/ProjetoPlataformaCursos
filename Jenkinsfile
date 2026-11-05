@@ -146,6 +146,7 @@ pipeline {
                     } catch (err) {
                         runCmd('docker compose -f ' + env.COMPOSE_FILE + ' ps')
                         runCmd('docker compose -f ' + env.COMPOSE_FILE + ' logs --tail=100 api')
+                        runCmd('docker compose -f ' + env.COMPOSE_FILE + ' logs --tail=100 bff')
                         throw err
                     }
                 }
