@@ -1,14 +1,14 @@
-const express = require('express');
-const path = require('path');
-const app = express();
+import express from 'express';
+import path from 'path';
 
+const app = express();
 // Aponta para o seu Spring Boot (via Docker ou local)
 const API = process.env.API_URL || 'http://localhost:8080';
 
 app.use(express.json());
 
 // 1. Serve os arquivos estáticos gerados pelo Vite (pasta dist)
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.resolve('dist')));
 
 // 2. Rota de Proxy: Repassa qualquer chamada /api/* para o Spring Boot
 app.all('/api/*', async (req, res) => {
@@ -34,7 +34,7 @@ app.all('/api/*', async (req, res) => {
 
 // 3. Fallback do Vue Router: Qualquer outra rota na barra de endereços devolve o index.html
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    res.sendFile(path.resolve('dist/index.html'));
 });
 
 // 4. Inicia o servidor na porta 3000
