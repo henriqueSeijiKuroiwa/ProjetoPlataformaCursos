@@ -10,19 +10,20 @@ app.use(express.json());
 // 1. Serve os arquivos estáticos gerados pelo Vite (pasta dist)
 app.use(express.static(path.resolve('dist')));
 
-// 2. Rota de Proxy: Repassa qualquer chamada /api/* para o Spring Boot
-app.all('/api/:path(*)', async (req, res) => {
+// 2. Proxy para a API (Usar app.use intercepta tudo que começa com /api)
+app.use('/api', async (req, res) => {
     try {
         const options = {
             method: req.method,
             headers: { 'Content-Type': 'application/json' }
         };
 
+        // Adiciona o corpo (body) apenas se não for um método GET/HEAD
         if (req.method !== 'GET' && req.method !== 'HEAD' && req.body && Object.keys(req.body).length > 0) {
             options.body = JSON.stringify(req.body);
         }
 
-        // MUDANÇA AQUI na URL do fetch. Usamos o req.originalUrl para repassar o caminho exato
+        // O req.originalUrl mantém o caminho completo (ex: /api/auth/login)
         const response = await fetch(`${API}${req.originalUrl}`, options);
         const data = await response.text();
         res.status(response.status).send(data);
@@ -32,8 +33,9 @@ app.all('/api/:path(*)', async (req, res) => {
     }
 });
 
-// 3. Fallback do Vue Router: Qualquer outra rota na barra de endereços devolve o index.html
-app.get('*', (req, res) => {
+// 3. Fallback do Vue Router: Como está no final do arquivo, captura qualquer
+// requisição GET (como /dashboard) que não caiu no /api, devolvendo o Vue.
+app.use((req, res) => {
     res.sendFile(path.resolve('dist/index.html'));
 });
 
